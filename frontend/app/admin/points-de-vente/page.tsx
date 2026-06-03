@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import { MainLayout } from '@/components/main-layout'
 import { Card } from '@/components/ui/card'
 import { Building2, Boxes, PackageCheck } from 'lucide-react'
-import { branches, stockItems } from '@/lib/seed-data'
 import { getRole, can } from '@/lib/auth'
+import { getMockState } from '@/lib/mock-store'
 
 interface PointDeVenteRow {
   id: number
   nom: string
+  region: string
   emplacement: string
   totalStock: number
   referencesActives: number
@@ -18,34 +19,21 @@ interface PointDeVenteRow {
 }
 
 function buildPointsDeVenteRows(): PointDeVenteRow[] {
-  const branchMap = new Map(branches.map((b) => [b.name, b]))
-  const stockByBranch = new Map<string, { total: number; refs: Set<string> }>()
+  const state = getMockState()
 
-  for (const item of stockItems) {
-    for (const branch of item.branches) {
-      const current = stockByBranch.get(branch.name) || { total: 0, refs: new Set<string>() }
-      current.total += branch.qty
-      if (branch.qty > 0) {
-        current.refs.add(item.partCode)
-      }
-      stockByBranch.set(branch.name, current)
-    }
-  }
-
-  const names = new Set<string>([...branchMap.keys(), ...stockByBranch.keys()])
-
-  return [...names]
-    .map((name, index) => {
-      const stock = stockByBranch.get(name)
-      const branchInfo = branchMap.get(name)
-
+  return state.stores
+    .map((store) => {
+      const storeStock = state.stock.filter((stock) => stock.storeId === store.id)
+      const total = storeStock.reduce((sum, row) => sum + row.normalQty + row.cabaQty, 0)
+      const refs = storeStock.filter((row) => row.normalQty + row.cabaQty > 0).length
       return {
-        id: index + 1,
-        nom: name,
-        emplacement: branchInfo?.location || 'Non renseigne',
-        totalStock: stock?.total || 0,
-        referencesActives: stock?.refs.size || 0,
-        statut: branchInfo?.status === 'inactive' ? 'Inactif' : 'Actif',
+        id: store.id,
+        nom: store.name,
+        region: store.region,
+        emplacement: store.location,
+        totalStock: total,
+        referencesActives: refs,
+        statut: (store.status === 'inactive' ? 'Inactif' : 'Actif') as 'Actif' | 'Inactif',
       }
     })
     .sort((a, b) => b.totalStock - a.totalStock)
@@ -107,6 +95,7 @@ export default function PointsDeVentePage() {
             <thead className="bg-sidebar border-b border-border">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Point de vente</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Region</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Emplacement</th>
                 <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">References actives</th>
                 <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Stock total</th>
@@ -117,6 +106,7 @@ export default function PointsDeVentePage() {
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-border hover:bg-sidebar/50 transition-colors">
                   <td className="px-6 py-4 text-sm font-semibold text-foreground">{row.nom}</td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">{row.region}</td>
                   <td className="px-6 py-4 text-sm text-muted-foreground">{row.emplacement}</td>
                   <td className="px-6 py-4 text-sm text-right text-foreground">{row.referencesActives}</td>
                   <td className="px-6 py-4 text-sm text-right font-bold text-accent">{row.totalStock}</td>

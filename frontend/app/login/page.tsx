@@ -11,25 +11,25 @@ import { Eye, EyeOff, Shield, Building2, Eye as EyeIcon } from 'lucide-react'
 import { demoAccounts, type UserRole } from '@/lib/seed-data'
 import { setSession } from '@/lib/auth'
 
-const ROLES: UserRole[] = ['Administrator', 'Branch Manager', 'Viewer']
+const ROLES: UserRole[] = ['Administrator', 'Store Manager', 'Seller']
 
 const roleIcons: Record<UserRole, React.ReactNode> = {
   Administrator: <Shield size={18} />,
-  'Branch Manager': <Building2 size={18} />,
-  Viewer: <EyeIcon size={18} />,
+  'Store Manager': <Building2 size={18} />,
+  Seller: <EyeIcon size={18} />,
 }
 
 const roleLabels: Record<UserRole, string> = {
   Administrator: 'Administrateur',
-  'Branch Manager': "Responsable d'agence",
-  Viewer: 'Lecteur',
+  'Store Manager': 'Responsable magasin',
+  Seller: 'Vendeur',
 }
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<UserRole>('Viewer')
+  const [role, setRole] = useState<UserRole>('Seller')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -41,7 +41,7 @@ export default function LoginPage() {
       role: account.role,
       name: account.name,
       email: account.email,
-      branch: account.role === 'Administrator' ? 'All Branches' : 'Branch A',
+      storeId: account.storeId,
     })
     router.push('/dashboard')
   }
@@ -59,7 +59,7 @@ export default function LoginPage() {
           role,
           name: email.split('@')[0],
           email,
-          branch: role === 'Administrator' ? 'All Branches' : 'Branch A',
+          storeId: role === 'Administrator' ? null : 1,
         })
         router.push('/dashboard')
       } else {

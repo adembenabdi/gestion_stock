@@ -25,11 +25,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getRole, can } from '@/lib/auth'
+import { addStore, addUser, getMockState } from '@/lib/mock-store'
+import { can, getRole } from '@/lib/auth'
+import type { UserRole } from '@/lib/seed-data'
 
 export default function AdminPage() {
   const router = useRouter()
   const [allowed, setAllowed] = useState(false)
+  const [message, setMessage] = useState('')
+  const [refreshToken, setRefreshToken] = useState(0)
 
   useEffect(() => {
     if (!can(getRole()).administer) {
@@ -39,65 +43,56 @@ export default function AdminPage() {
     setAllowed(true)
   }, [router])
 
-  const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Responsable', branch: 'Agence A', status: 'active' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Vendeur', branch: 'Agence B', status: 'active' },
-    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', role: 'Magasinier', branch: 'Agence C', status: 'active' },
-  ])
-
-  const [branches, setBranches] = useState([
-    { id: 1, name: 'Agence A', location: 'Siege principal', manager: 'John Doe', status: 'active' },
-    { id: 2, name: 'Agence B', location: 'Centre-ville', manager: 'Jane Smith', status: 'active' },
-    { id: 3, name: 'Agence C', location: 'Cote Est', manager: 'Mike Johnson', status: 'active' },
-  ])
+  const state = getMockState()
+  const users = state.users
+  const stores = state.stores
 
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false)
   const [isBranchDialogOpen, setIsBranchDialogOpen] = useState(false)
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Vendeur', branch: 'branch-a' })
-  const [newBranch, setNewBranch] = useState({ name: '', location: '', manager: '' })
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Seller' as UserRole, storeId: '1' })
+  const [newBranch, setNewBranch] = useState({ name: '', location: '', region: 'North' })
 
   const handleAddUser = () => {
     if (newUser.name && newUser.email) {
-      setUsers([
-        ...users,
-        {
-          id: users.length + 1,
-          ...newUser,
-          status: 'active',
-        },
-      ])
-      setNewUser({ name: '', email: '', role: 'Vendeur', branch: 'branch-a' })
-      setIsUserDialogOpen(false)
+      const result = addUser({
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        storeId: newUser.role === 'Administrator' ? null : Number(newUser.storeId),
+      })
+      setMessage(result.message)
+      if (result.ok) {
+        setNewUser({ name: '', email: '', role: 'Seller', storeId: '1' })
+        setIsUserDialogOpen(false)
+        setRefreshToken((x) => x + 1)
+      }
     }
-  }
-
-  const handleDeleteUser = (id: number) => {
-    setUsers(users.filter(u => u.id !== id))
   }
 
   const handleAddBranch = () => {
-    if (newBranch.name && newBranch.location) {
-      setBranches([
-        ...branches,
-        {
-          id: branches.length + 1,
-          ...newBranch,
-          status: 'active',
-        },
-      ])
-      setNewBranch({ name: '', location: '', manager: '' })
-      setIsBranchDialogOpen(false)
+    if (newBranch.name && newBranch.location && newBranch.region) {
+      const result = addStore({
+        name: newBranch.name,
+        location: newBranch.location,
+        region: newBranch.region,
+      })
+      setMessage(result.message)
+      if (result.ok) {
+        setNewBranch({ name: '', location: '', region: 'North' })
+        setIsBranchDialogOpen(false)
+        setRefreshToken((x) => x + 1)
+      }
     }
-  }
-
-  const handleDeleteBranch = (id: number) => {
-    setBranches(branches.filter(b => b.id !== id))
   }
 
   if (!allowed) return null
 
   return (
     <MainLayout title="Administration" subtitle="Gerez les utilisateurs, les agences et les parametres systeme">
+      {message && (
+        <Card className="bg-card border border-border p-4 mb-6 text-sm text-foreground">{message}</Card>
+      )}
+
       <div className="mb-6 flex justify-end">
         <Link href="/admin/points-de-vente">
           <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">
@@ -161,28 +156,27 @@ export default function AdminPage() {
                     </div>
                     <div>
                       <Label htmlFor="role" className="text-foreground">Rôle</Label>
-                      <Select value={newUser.role} onValueChange={(val) => setNewUser({ ...newUser, role: val })}>
+                      <Select value={newUser.role} onValueChange={(val) => setNewUser({ ...newUser, role: val as UserRole })}>
                         <SelectTrigger className="bg-input border-border text-foreground">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Responsable">Responsable</SelectItem>
-                          <SelectItem value="Vendeur">Vendeur</SelectItem>
-                          <SelectItem value="Magasinier">Magasinier</SelectItem>
-                          <SelectItem value="Administrateur">Administrateur</SelectItem>
+                          <SelectItem value="Administrator">Administrator</SelectItem>
+                          <SelectItem value="Store Manager">Store Manager</SelectItem>
+                          <SelectItem value="Seller">Seller</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="branch" className="text-foreground">Agence</Label>
-                      <Select value={newUser.branch} onValueChange={(val) => setNewUser({ ...newUser, branch: val })}>
+                      <Label htmlFor="branch" className="text-foreground">Store</Label>
+                      <Select value={newUser.storeId} onValueChange={(val) => setNewUser({ ...newUser, storeId: val })}>
                         <SelectTrigger className="bg-input border-border text-foreground">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="branch-a">Agence A</SelectItem>
-                          <SelectItem value="branch-b">Agence B</SelectItem>
-                          <SelectItem value="branch-c">Agence C</SelectItem>
+                          {stores.map((store) => (
+                            <SelectItem key={store.id} value={String(store.id)}>{store.name}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -219,7 +213,7 @@ export default function AdminPage() {
                         <td className="px-6 py-4 text-sm font-semibold text-foreground">{user.name}</td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">{user.email}</td>
                         <td className="px-6 py-4 text-sm text-foreground">{user.role}</td>
-                        <td className="px-6 py-4 text-sm text-foreground">{user.branch}</td>
+                        <td className="px-6 py-4 text-sm text-foreground">{user.storeId ? stores.find((s) => s.id === user.storeId)?.name : 'All Stores'}</td>
                         <td className="px-6 py-4 text-sm">
                           <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-semibold">
                             {user.status === 'active' ? 'Actif' : 'Inactif'}
@@ -230,10 +224,7 @@ export default function AdminPage() {
                             <button className="p-2 text-muted-foreground hover:text-accent transition-colors">
                               <Edit2 size={16} />
                             </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                            >
+                            <button className="p-2 text-muted-foreground hover:text-destructive transition-colors">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -281,21 +272,25 @@ export default function AdminPage() {
                       <Label htmlFor="location" className="text-foreground">Emplacement</Label>
                       <Input
                         id="location"
-                        placeholder="Ex. Quartier ouest"
+                        placeholder="Ex. Central district"
                         value={newBranch.location}
                         onChange={(e) => setNewBranch({ ...newBranch, location: e.target.value })}
                         className="bg-input border-border text-foreground"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="manager" className="text-foreground">Responsable</Label>
-                      <Input
-                        id="manager"
-                        placeholder="Selectionner un responsable"
-                        value={newBranch.manager}
-                        onChange={(e) => setNewBranch({ ...newBranch, manager: e.target.value })}
-                        className="bg-input border-border text-foreground"
-                      />
+                      <Label htmlFor="region" className="text-foreground">Region</Label>
+                      <Select value={newBranch.region} onValueChange={(val) => setNewBranch({ ...newBranch, region: val })}>
+                        <SelectTrigger className="bg-input border-border text-foreground">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="North">North</SelectItem>
+                          <SelectItem value="East">East</SelectItem>
+                          <SelectItem value="West">West</SelectItem>
+                          <SelectItem value="South">South</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="flex gap-3 justify-end">
@@ -324,11 +319,11 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {branches.map((branch) => (
+                    {stores.map((branch) => (
                       <tr key={branch.id} className="border-b border-border hover:bg-sidebar/50 transition-colors">
                         <td className="px-6 py-4 text-sm font-semibold text-foreground">{branch.name}</td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">{branch.location}</td>
-                        <td className="px-6 py-4 text-sm text-foreground">{branch.manager}</td>
+                        <td className="px-6 py-4 text-sm text-foreground">{branch.region}</td>
                         <td className="px-6 py-4 text-sm">
                           <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-semibold">
                             {branch.status === 'active' ? 'Actif' : 'Inactif'}
@@ -339,10 +334,7 @@ export default function AdminPage() {
                             <button className="p-2 text-muted-foreground hover:text-accent transition-colors">
                               <Edit2 size={16} />
                             </button>
-                            <button
-                              onClick={() => handleDeleteBranch(branch.id)}
-                              className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                            >
+                            <button className="p-2 text-muted-foreground hover:text-destructive transition-colors">
                               <Trash2 size={16} />
                             </button>
                           </div>

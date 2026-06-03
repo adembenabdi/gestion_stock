@@ -3,71 +3,94 @@
 import { useEffect, useState } from 'react'
 import { MainLayout } from '@/components/main-layout'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { BarChart3, TrendingUp, AlertCircle, Package } from 'lucide-react'
-import Link from 'next/link'
-import { getRole, can } from '@/lib/auth'
+import { BarChart3, TrendingUp, AlertCircle, Package, Wallet } from 'lucide-react'
+import { getRole, getStoreId } from '@/lib/auth'
+import { computeReturnedTotal, computeInvoiceTotal, getFinancialSummary, getMockState } from '@/lib/mock-store'
 import type { UserRole } from '@/lib/seed-data'
 
 export default function DashboardPage() {
-  const [role, setRole] = useState<UserRole>('Viewer')
+  const [role, setRole] = useState<UserRole>('Seller')
+  const [storeName, setStoreName] = useState('Current Store')
+  const [cards, setCards] = useState<Array<{ label: string; value: string; color: string; icon: React.ReactNode }>>([])
+  const [recentEvents, setRecentEvents] = useState<Array<{ id: number; title: string; subtitle: string; badge: string }>>([])
 
   useEffect(() => {
-    setRole(getRole())
+    const currentRole = getRole()
+    const currentStoreId = getStoreId()
+    const state = getMockState()
+
+    setRole(currentRole)
+
+    const selectedStore = state.stores.find((s) => s.id === currentStoreId)
+    setStoreName(selectedStore?.name || 'All Stores')
+
+    const financial = getFinancialSummary(currentRole, currentStoreId)
+    const scopedInvoices = currentRole === 'Administrator'
+      ? state.invoices
+      : state.invoices.filter((x) => x.storeId === currentStoreId)
+
+    const scopedStock = currentRole === 'Administrator'
+      ? state.stock
+      : state.stock.filter((x) => x.storeId === currentStoreId)
+
+    const lowStock = scopedStock.filter((x) => x.normalQty + x.cabaQty > 0 && x.normalQty + x.cabaQty < 5).length
+    const totalQty = scopedStock.reduce((sum, x) => sum + x.normalQty + x.cabaQty, 0)
+
+    setCards([
+      {
+        label: 'Available units',
+        value: String(totalQty),
+        color: 'bg-primary/10',
+        icon: <Package className="text-primary" size={24} />,
+      },
+      {
+        label: 'Low stock lines',
+        value: String(lowStock),
+        color: 'bg-destructive/10',
+        icon: <AlertCircle className="text-destructive" size={24} />,
+      },
+      {
+        label: 'Sales (DZD)',
+        value: financial.sales.toLocaleString(),
+        color: 'bg-accent/10',
+        icon: <TrendingUp className="text-accent" size={24} />,
+      },
+      {
+        label: 'Net (DZD)',
+        value: financial.net.toLocaleString(),
+        color: 'bg-primary/10',
+        icon: <Wallet className="text-primary" size={24} />,
+      },
+    ])
+
+    const invoiceEvents = scopedInvoices.slice(0, 5).map((inv) => ({
+      id: inv.id,
+      title: `${inv.invoiceNumber} - ${computeInvoiceTotal(inv).toLocaleString()} DZD`,
+      subtitle: `${new Date(inv.createdAt).toLocaleDateString()} - Returns ${computeReturnedTotal(inv).toLocaleString()} DZD`,
+      badge: inv.status,
+    }))
+
+    const auditEvents = state.audit.slice(0, 3).map((a) => ({
+      id: 1000 + a.id,
+      title: a.action,
+      subtitle: `${a.actor} - ${a.details}`,
+      badge: 'AUDIT',
+    }))
+
+    setRecentEvents([...invoiceEvents, ...auditEvents].slice(0, 6))
   }, [])
 
-  const caps = can(role)
-
-  // Mock data
-  const stats = [
-    {
-      label: 'Total des pieces',
-      value: '2,847',
-      icon: <Package className="text-accent" size={24} />,
-      change: '+12%',
-      color: 'bg-accent/10',
-    },
-    {
-      label: 'Articles a stock faible',
-      value: '34',
-      icon: <AlertCircle className="text-destructive" size={24} />,
-      change: '-5%',
-      color: 'bg-destructive/10',
-    },
-    {
-      label: 'Total des agences',
-      value: '8',
-      icon: <BarChart3 className="text-primary" size={24} />,
-      change: '+2%',
-      color: 'bg-primary/10',
-    },
-    {
-      label: 'Mouvements mensuels',
-      value: '1,234',
-      icon: <TrendingUp className="text-primary" size={24} />,
-      change: '+18%',
-      color: 'bg-primary/10',
-    },
-  ]
-
-  const recentMovements = [
-    { id: 1, part: 'Carburateur', type: 'Entree', quantity: 50, branch: 'Agence A', date: '2024-06-02' },
-    { id: 2, part: 'Filtre a huile', type: 'Sortie', quantity: 100, branch: 'Agence B', date: '2024-06-02' },
-    { id: 3, part: "Bougies d'allumage", type: 'Entree', quantity: 200, branch: 'Agence C', date: '2024-06-01' },
-    { id: 4, part: 'Plaquettes de frein', type: 'Sortie', quantity: 75, branch: 'Agence A', date: '2024-06-01' },
-  ]
-
   return (
-    <MainLayout title="Tableau de bord" subtitle="Bienvenue. Voici un apercu de vos stocks.">
+    <MainLayout title="Tableau de bord" subtitle={`Role: ${role} - Scope: ${storeName}`}>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
+        {cards.map((stat, index) => (
           <Card key={index} className="bg-card border border-border p-6 hover:border-accent/50 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-lg ${stat.color}`}>
                 {stat.icon}
               </div>
-              <span className="text-xs font-semibold text-accent">{stat.change}</span>
+              <BarChart3 className="text-muted-foreground" size={16} />
             </div>
             <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
             <p className="text-3xl font-bold text-foreground">{stat.value}</p>
@@ -75,77 +98,22 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Recent Movements & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Movements */}
-        <Card className="lg:col-span-2 bg-card border border-border p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-6">Mouvements recents</h2>
+      <div className="grid grid-cols-1 gap-6">
+        <Card className="bg-card border border-border p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-6">Recent business events</h2>
           <div className="space-y-4">
-            {recentMovements.map((movement) => (
+            {recentEvents.map((event) => (
               <div
-                key={movement.id}
+                key={event.id}
                 className="flex items-center justify-between p-4 rounded-lg bg-sidebar hover:bg-sidebar/80 transition-colors border border-sidebar-border"
               >
                 <div className="flex-1">
-                  <p className="font-medium text-foreground">{movement.part}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {movement.branch} • {movement.date}
-                  </p>
+                  <p className="font-medium text-foreground">{event.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{event.subtitle}</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span
-                    className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                      movement.type === 'Entree'
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-destructive/20 text-destructive'
-                    }`}
-                  >
-                    {movement.type}
-                  </span>
-                  <span className="text-sm font-semibold text-foreground w-12 text-right">
-                    {movement.quantity}
-                  </span>
-                </div>
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-accent/20 text-accent">{event.badge}</span>
               </div>
             ))}
-          </div>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card className="bg-card border border-border p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-6">Actions rapides</h2>
-          <div className="space-y-3">
-            <Link href="/search">
-              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">
-                Rechercher une piece
-              </Button>
-            </Link>
-            {caps.recordOperations && (
-              <Link href="/operations">
-                <Button variant="outline" className="w-full border-border text-foreground hover:bg-sidebar">
-                  Ajouter un mouvement
-                </Button>
-              </Link>
-            )}
-            {caps.manageInventory && (
-              <Link href="/inventory">
-                <Button variant="outline" className="w-full border-border text-foreground hover:bg-sidebar">
-                  Gerer le catalogue
-                </Button>
-              </Link>
-            )}
-            {caps.importExcel && (
-              <Link href="/import">
-                <Button variant="outline" className="w-full border-border text-foreground hover:bg-sidebar">
-                  Importer Excel
-                </Button>
-              </Link>
-            )}
-            <Link href="/history">
-              <Button variant="outline" className="w-full border-border text-foreground hover:bg-sidebar">
-                Voir l historique
-              </Button>
-            </Link>
           </div>
         </Card>
       </div>

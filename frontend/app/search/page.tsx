@@ -1,250 +1,123 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MainLayout } from '@/components/main-layout'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Filter, X } from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Search } from 'lucide-react'
+import { availabilityForProduct, getMockState } from '@/lib/mock-store'
+import { getStoreId } from '@/lib/auth'
 
 export default function SearchPage() {
-  const [search, setSearch] = useState('')
-  const [branch, setBranch] = useState('all')
-  const [status, setStatus] = useState('all')
-  const [showFilters, setShowFilters] = useState(false)
+  const [reference, setReference] = useState('CAB-001')
+  const [requiredQty, setRequiredQty] = useState(20)
+  const [resolvedStoreId, setResolvedStoreId] = useState(1)
+  const [result, setResult] = useState<ReturnType<typeof availabilityForProduct>>(null)
 
-  // Mock search results
-  const results = [
-    {
-      id: 1,
-      partName: 'Carburateur',
-      partCode: 'CAR-001',
-      category: 'Moteur',
-      stock: 45,
-      unit: 'pcs',
-      branches: [
-        { name: 'Agence A', qty: 20 },
-        { name: 'Agence B', qty: 15 },
-        { name: 'Agence C', qty: 10 },
-      ],
-      status: 'in-stock',
-      price: '89,99 €',
-    },
-    {
-      id: 2,
-      partName: 'Filtre a huile',
-      partCode: 'OIL-002',
-      category: 'Filtres',
-      stock: 120,
-      unit: 'pcs',
-      branches: [
-        { name: 'Agence A', qty: 50 },
-        { name: 'Agence D', qty: 70 },
-      ],
-      status: 'in-stock',
-      price: '12,50 €',
-    },
-    {
-      id: 3,
-      partName: 'Plaquettes de frein',
-      partCode: 'BRK-003',
-      category: 'Freins',
-      stock: 8,
-      unit: 'jeux',
-      branches: [
-        { name: 'Agence C', qty: 8 },
-      ],
-      status: 'low-stock',
-      price: '34,99 €',
-    },
-    {
-      id: 4,
-      partName: "Bougies d'allumage",
-      partCode: 'SPK-004',
-      category: 'Allumage',
-      stock: 0,
-      unit: 'pcs',
-      branches: [],
-      status: 'out-of-stock',
-      price: '8,99 €',
-    },
-  ]
+  useEffect(() => {
+    const fallback = getMockState().stores[0]?.id || 1
+    setResolvedStoreId(getStoreId() || fallback)
+  }, [])
 
-  const branchValueToName: Record<string, string> = {
-    'branch-a': 'Agence A',
-    'branch-b': 'Agence B',
-    'branch-c': 'Agence C',
-    'branch-d': 'Agence D',
-  }
+  useEffect(() => {
+    setResult(availabilityForProduct(reference.trim(), resolvedStoreId))
+  }, [reference, resolvedStoreId])
 
-  const filteredResults = results.filter((item) => {
-    const term = search.trim().toLowerCase()
-    const matchesSearch =
-      term === '' ||
-      item.partName.toLowerCase().includes(term) ||
-      item.partCode.toLowerCase().includes(term) ||
-      item.category.toLowerCase().includes(term)
+  const reachableQty = (result?.currentQty || 0)
+    + (result?.nearby.reduce((sum, x) => sum + x.quantity, 0) || 0)
+    + (result?.other.reduce((sum, x) => sum + x.quantity, 0) || 0)
 
-    const matchesStatus = status === 'all' || item.status === status
-
-    const matchesBranch =
-      branch === 'all' ||
-      item.branches.some((b) => b.name === branchValueToName[branch])
-
-    return matchesSearch && matchesStatus && matchesBranch
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setBranch('all')
-    setStatus('all')
-  }
+  const canFulfill = reachableQty >= requiredQty
 
   return (
-    <MainLayout title="Recherche piece" subtitle="Recherchez et consultez les quantites dans toutes les agences">
-      {/* Search Bar */}
+    <MainLayout title="Recherche intelligente" subtitle="Sequence automatique: current store -> same region -> global stores">
       <div className="mb-8">
         <div className="flex gap-3 flex-col md:flex-row">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
             <Input
-              placeholder="Rechercher par nom, code ou categorie..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Enter product reference (example: CAB-001)"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
               className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
-          <Button
-            onClick={() => setShowFilters(!showFilters)}
-            variant="outline"
-            className="border-border text-foreground hover:bg-sidebar"
-          >
-            <Filter size={20} />
-              <span>Filtres</span>
-          </Button>
-        </div>
-
-        {/* Filter Panel */}
-        {showFilters && (
-          <div className="mt-4 p-6 bg-card border border-border rounded-lg space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium text-foreground block mb-2">Agence</label>
-                <Select value={branch} onValueChange={setBranch}>
-                  <SelectTrigger className="bg-input border-border text-foreground">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes les agences</SelectItem>
-                    <SelectItem value="branch-a">Agence A</SelectItem>
-                    <SelectItem value="branch-b">Agence B</SelectItem>
-                    <SelectItem value="branch-c">Agence C</SelectItem>
-                    <SelectItem value="branch-d">Agence D</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground block mb-2">Statut</label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="bg-input border-border text-foreground">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="in-stock">En stock</SelectItem>
-                    <SelectItem value="low-stock">Stock faible</SelectItem>
-                    <SelectItem value="out-of-stock">Rupture</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-end">
-                <Button
-                  onClick={handleClearFilters}
-                  variant="outline"
-                  className="w-full border-border text-foreground hover:bg-sidebar"
-                >
-                  <X size={18} />
-                  Effacer les filtres
-                </Button>
-              </div>
-            </div>
+          <div className="w-40">
+            <Input
+              type="number"
+              min={1}
+              value={requiredQty}
+              onChange={(e) => setRequiredQty(Number(e.target.value || 1))}
+              className="bg-input border-border text-foreground"
+            />
           </div>
-        )}
+          <div className="w-48">
+            <Button className="w-full bg-accent hover:bg-accent/90" onClick={() => setResult(availabilityForProduct(reference.trim(), resolvedStoreId))}>
+              Check availability
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Results */}
-      <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          {filteredResults.length} resultat{filteredResults.length > 1 ? 's' : ''}
-        </p>
-        {filteredResults.map((item) => (
-          <Card key={item.id} className="bg-card border border-border p-6 hover:border-accent/50 transition-colors">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Nom de la piece</p>
-                <p className="font-semibold text-foreground">{item.partName}</p>
-                <p className="text-xs text-muted-foreground mt-1">{item.partCode}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Categorie</p>
-                <p className="font-semibold text-foreground">{item.category}</p>
-              </div>
-              <div className="flex items-start justify-between md:flex-col">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Stock total</p>
-                  <p className="text-2xl font-bold text-accent">{item.stock} {item.unit}</p>
-                </div>
-                <span
-                  className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                    item.status === 'in-stock'
-                      ? 'bg-primary/20 text-primary'
-                      : item.status === 'low-stock'
-                      ? 'bg-yellow-500/20 text-yellow-500'
-                      : 'bg-destructive/20 text-destructive'
-                  }`}
-                >
-                  {item.status === 'in-stock' ? 'En stock' : item.status === 'low-stock' ? 'Stock faible' : 'Rupture'}
-                </span>
-              </div>
+      {result ? (
+        <div className="space-y-6">
+          <Card className="bg-card border border-border p-6">
+            <p className="text-sm text-muted-foreground mb-2">Product</p>
+            <p className="text-xl font-semibold text-foreground">{result.product.name} ({result.product.reference})</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Required: {requiredQty} - Reachable: {reachableQty}
+            </p>
+            <p className={`mt-3 text-sm font-semibold ${canFulfill ? 'text-primary' : 'text-destructive'}`}>
+              {canFulfill ? 'Order can be fulfilled with intelligent sourcing.' : 'Order cannot be fully fulfilled with current stock.'}
+            </p>
+          </Card>
+
+          <Card className="bg-card border border-border p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">1) Current store</h2>
+            <div className="p-4 rounded-lg bg-sidebar border border-sidebar-border">
+              <p className="text-sm text-foreground">{result.currentStore?.name || 'Current store'}</p>
+              <p className="text-2xl font-bold text-accent">{result.currentQty}</p>
             </div>
+          </Card>
 
-            {/* Distribution par agence */}
-            {item.branches.length > 0 && (
-              <div className="pt-4 border-t border-border">
-                <p className="text-sm font-medium text-foreground mb-3">Disponible par agence</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {item.branches.map((branch, idx) => (
-                    <div key={idx} className="p-3 rounded-lg bg-sidebar">
-                      <p className="text-xs text-muted-foreground">{branch.name}</p>
-                      <p className="text-lg font-semibold text-foreground">{branch.qty}</p>
-                    </div>
-                  ))}
+          <Card className="bg-card border border-border p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">2) Nearby stores (same region)</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {result.nearby.map((item) => (
+                <div key={item.store.id} className="p-4 rounded-lg bg-sidebar border border-sidebar-border">
+                  <p className="text-sm text-foreground">{item.store.name}</p>
+                  <p className="text-xs text-muted-foreground">{item.store.region}</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{item.quantity}</p>
                 </div>
-              </div>
-            )}
+              ))}
+              {result.nearby.length === 0 && (
+                <p className="text-sm text-muted-foreground">No nearby stock available.</p>
+              )}
+            </div>
+          </Card>
 
-            {item.branches.length === 0 && (
-              <div className="pt-4 border-t border-border">
-                <p className="text-sm text-muted-foreground italic">Aucun stock disponible dans les agences</p>
-              </div>
-            )}
+          <Card className="bg-card border border-border p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">3) Other stores (global)</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {result.other.map((item) => (
+                <div key={item.store.id} className="p-4 rounded-lg bg-sidebar border border-sidebar-border">
+                  <p className="text-sm text-foreground">{item.store.name}</p>
+                  <p className="text-xs text-muted-foreground">{item.store.region}</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{item.quantity}</p>
+                </div>
+              ))}
+              {result.other.length === 0 && (
+                <p className="text-sm text-muted-foreground">No global stock available outside your region.</p>
+              )}
+            </div>
           </Card>
-        ))}
-        {filteredResults.length === 0 && (
-          <Card className="bg-card border border-border p-12 text-center">
-            <p className="text-muted-foreground">Aucune piece ne correspond a votre recherche.</p>
-          </Card>
-        )}
-      </div>
+        </div>
+      ) : (
+        <Card className="bg-card border border-border p-12 text-center">
+          <p className="text-muted-foreground">Unknown reference. Try CAB-001, FIL-002, BAT-003, or SPK-004.</p>
+        </Card>
+      )}
     </MainLayout>
   )
 }

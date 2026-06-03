@@ -20,14 +20,14 @@ interface HeaderProps {
 
 const roleLabels: Record<string, string> = {
   Administrator: 'Administrateur',
-  'Branch Manager': "Responsable d'agence",
-  Viewer: 'Lecteur',
+  'Store Manager': 'Responsable magasin',
+  Seller: 'Vendeur',
 }
 
 export function Header({ title, subtitle }: HeaderProps) {
   const router = useRouter()
   const [userName, setUserName] = useState('User')
-  const [userRole, setUserRole] = useState('Viewer')
+  const [userRole, setUserRole] = useState('Seller')
 
   useEffect(() => {
     setUserName(getName())
@@ -42,8 +42,8 @@ export function Header({ title, subtitle }: HeaderProps) {
   const getRoleColor = (role: string) => {
     const colors: Record<string, string> = {
       'Administrator': 'bg-destructive/20 text-destructive',
-      'Branch Manager': 'bg-accent/20 text-accent',
-      'Viewer': 'bg-primary/20 text-primary',
+      'Store Manager': 'bg-accent/20 text-accent',
+      'Seller': 'bg-primary/20 text-primary',
     }
     return colors[role] || 'bg-muted text-muted-foreground'
   }

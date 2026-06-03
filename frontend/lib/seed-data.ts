@@ -1,175 +1,261 @@
-// Centralized seed data for the frontend (no backend / no database).
-// All pages read their mock data from here so the demo stays consistent.
+export type UserRole = 'Administrator' | 'Store Manager' | 'Seller'
 
-export type UserRole = 'Administrator' | 'Branch Manager' | 'Viewer'
+export type StockClass = 'NORMAL' | 'CABA'
+export type MovementType = 'IN' | 'OUT' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'RETURN'
+export type TransferStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+export interface Store {
+  id: number
+  name: string
+  region: string
+  location: string
+  status: 'active' | 'inactive'
+}
 
 export interface SeedUser {
   id: number
   name: string
   email: string
   role: UserRole
-  branch: string
+  storeId: number | null
   status: 'active' | 'inactive'
 }
 
-export interface Branch {
+export interface Product {
   id: number
+  reference: string
   name: string
-  location: string
-  manager: string
-  status: 'active' | 'inactive'
+  category?: string
+  sellingPrice: number
 }
 
-export interface Part {
-  id: number
-  code: string
-  name: string
-  category: string
-  unit: string
-  price: number
-  totalStock: number
+export interface StockRecord {
+  productId: number
+  storeId: number
+  normalQty: number
+  cabaQty: number
 }
-
-export interface StockPerBranch {
-  name: string
-  qty: number
-}
-
-export interface StockItem {
-  id: number
-  partName: string
-  partCode: string
-  category: string
-  stock: number
-  unit: string
-  branches: StockPerBranch[]
-  status: 'in-stock' | 'low-stock' | 'out-of-stock'
-  price: string
-}
-
-export type MovementType = 'IN' | 'OUT' | 'TRANSFER'
 
 export interface Movement {
   id: number
-  date: string
-  time: string
+  createdAt: string
   type: MovementType
-  part: string
-  code: string
+  productId: number
   quantity: number
-  branch: string
-  user: string
-  reference: string
+  storeId: number
+  byUser: string
+  note: string
 }
 
-// --- Demo accounts (one per role, used by the login quick-access buttons) ---
-export const demoAccounts: { role: UserRole; name: string; email: string; description: string }[] = [
+export interface TransferRequest {
+  id: number
+  productId: number
+  quantity: number
+  fromStoreId: number
+  toStoreId: number
+  requestedBy: string
+  requestedAt: string
+  approvedBy?: string
+  approvedAt?: string
+  status: TransferStatus
+}
+
+export interface InvoiceItem {
+  productId: number
+  quantity: number
+  unitPrice: number
+}
+
+export interface ReturnItem {
+  productId: number
+  quantity: number
+}
+
+export interface Invoice {
+  id: number
+  invoiceNumber: string
+  storeId: number
+  seller: string
+  createdAt: string
+  customerName?: string
+  customerPhone?: string
+  customerAddress?: string
+  items: InvoiceItem[]
+  returnedItems: ReturnItem[]
+  status: 'OPEN' | 'PARTIAL_RETURN' | 'FULL_RETURN'
+}
+
+export interface Expense {
+  id: number
+  storeId: number
+  title: string
+  amount: number
+  createdAt: string
+}
+
+export interface AuditEntry {
+  id: number
+  createdAt: string
+  actor: string
+  action: string
+  details: string
+}
+
+export interface SeedState {
+  users: SeedUser[]
+  stores: Store[]
+  products: Product[]
+  stock: StockRecord[]
+  movements: Movement[]
+  transfers: TransferRequest[]
+  invoices: Invoice[]
+  expenses: Expense[]
+  audit: AuditEntry[]
+}
+
+export const demoAccounts: { role: UserRole; name: string; email: string; storeId: number | null; description: string }[] = [
   {
     role: 'Administrator',
     name: 'Sarah Admin',
     email: 'admin@inventorypro.com',
-    description: 'Acces total : utilisateurs, agences, catalogue et toutes les agences',
+    storeId: null,
+    description: 'Global inventory, finance, users, transfer approvals, Normal/CABA reports',
   },
   {
-    role: 'Branch Manager',
-    name: 'John Manager',
+    role: 'Store Manager',
+    name: 'Karim Manager',
     email: 'manager@inventorypro.com',
-    description: 'Gere le stock et les mouvements d une agence',
+    storeId: 1,
+    description: 'Manage one store stock, invoices, returns, expenses and transfer requests',
   },
   {
-    role: 'Viewer',
-    name: 'Mike Viewer',
-    email: 'viewer@inventorypro.com',
-    description: 'Lecture seule : consultation du stock et historique des mouvements',
+    role: 'Seller',
+    name: 'Nadia Seller',
+    email: 'seller@inventorypro.com',
+    storeId: 1,
+    description: 'Sales operations, invoice creation and intelligent product availability search',
   },
 ]
 
-// --- Branches ---
-export const branches: Branch[] = [
-  { id: 1, name: 'Agence A', location: 'Siege principal', manager: 'John Manager', status: 'active' },
-  { id: 2, name: 'Agence B', location: 'Centre-ville', manager: 'Jane Smith', status: 'active' },
-  { id: 3, name: 'Agence C', location: 'Cote Est', manager: 'Mike Johnson', status: 'active' },
-  { id: 4, name: 'Agence D', location: 'Cote Ouest', manager: 'Tom Davis', status: 'active' },
-]
-
-// --- Users ---
-export const users: SeedUser[] = [
-  { id: 1, name: 'Sarah Admin', email: 'admin@inventorypro.com', role: 'Administrator', branch: 'Toutes les agences', status: 'active' },
-  { id: 2, name: 'John Manager', email: 'manager@inventorypro.com', role: 'Branch Manager', branch: 'Agence A', status: 'active' },
-  { id: 3, name: 'Mike Viewer', email: 'viewer@inventorypro.com', role: 'Viewer', branch: 'Agence B', status: 'active' },
-  { id: 4, name: 'Jane Smith', email: 'jane@inventorypro.com', role: 'Branch Manager', branch: 'Agence B', status: 'active' },
-]
-
-// --- Parts catalog ---
-export const parts: Part[] = [
-  { id: 1, code: 'CAR-001', name: 'Carburateur', category: 'Moteur', unit: 'pcs', price: 89.99, totalStock: 45 },
-  { id: 2, code: 'OIL-002', name: 'Filtre a huile', category: 'Filtres', unit: 'pcs', price: 12.5, totalStock: 120 },
-  { id: 3, code: 'BRK-003', name: 'Plaquettes de frein', category: 'Freinage', unit: 'sets', price: 34.99, totalStock: 8 },
-  { id: 4, code: 'SPK-004', name: 'Bougies d allumage', category: 'Allumage', unit: 'pcs', price: 8.99, totalStock: 0 },
-  { id: 5, code: 'BAT-005', name: 'Batterie 12V', category: 'Electrique', unit: 'pcs', price: 120.0, totalStock: 25 },
-]
-
-// --- Distribution des stocks par agence (utilisee par la consultation) ---
-export const stockItems: StockItem[] = [
-  {
-    id: 1,
-    partName: 'Carburateur',
-    partCode: 'CAR-001',
-    category: 'Moteur',
-    stock: 45,
-    unit: 'pcs',
-    branches: [
-      { name: 'Agence A', qty: 20 },
-      { name: 'Agence B', qty: 15 },
-      { name: 'Agence C', qty: 10 },
-    ],
-    status: 'in-stock',
-    price: '$89.99',
-  },
-  {
-    id: 2,
-    partName: 'Filtre a huile',
-    partCode: 'OIL-002',
-    category: 'Filtres',
-    stock: 120,
-    unit: 'pcs',
-    branches: [
-      { name: 'Agence A', qty: 50 },
-      { name: 'Agence D', qty: 70 },
-    ],
-    status: 'in-stock',
-    price: '$12.50',
-  },
-  {
-    id: 3,
-    partName: 'Plaquettes de frein',
-    partCode: 'BRK-003',
-    category: 'Freinage',
-    stock: 8,
-    unit: 'sets',
-    branches: [{ name: 'Agence C', qty: 8 }],
-    status: 'low-stock',
-    price: '$34.99',
-  },
-  {
-    id: 4,
-    partName: 'Bougies d allumage',
-    partCode: 'SPK-004',
-    category: 'Allumage',
-    stock: 0,
-    unit: 'pcs',
-    branches: [],
-    status: 'out-of-stock',
-    price: '$8.99',
-  },
-]
-
-// --- Historique des mouvements ---
-export const movements: Movement[] = [
-  { id: 1, date: '2024-06-02', time: '14:30', type: 'IN', part: 'Carburateur', code: 'CAR-001', quantity: 50, branch: 'Agence A', user: 'John Manager', reference: 'PO-2024-001' },
-  { id: 2, date: '2024-06-02', time: '13:15', type: 'OUT', part: 'Filtre a huile', code: 'OIL-002', quantity: 100, branch: 'Agence B', user: 'Jane Smith', reference: 'SO-2024-156' },
-  { id: 3, date: '2024-06-01', time: '10:45', type: 'IN', part: 'Bougies d allumage', code: 'SPK-004', quantity: 200, branch: 'Agence C', user: 'Mike Johnson', reference: 'PO-2024-002' },
-  { id: 4, date: '2024-06-01', time: '09:20', type: 'OUT', part: 'Plaquettes de frein', code: 'BRK-003', quantity: 75, branch: 'Agence A', user: 'Sarah Wilson', reference: 'SO-2024-155' },
-  { id: 5, date: '2024-05-31', time: '16:00', type: 'IN', part: 'Batterie 12V', code: 'BAT-005', quantity: 30, branch: 'Agence D', user: 'Tom Davis', reference: 'PO-2024-003' },
-  { id: 6, date: '2024-05-31', time: '11:30', type: 'TRANSFER', part: 'Filtre a huile', code: 'OIL-002', quantity: 20, branch: 'Agence B → Agence A', user: 'John Manager', reference: 'TR-2024-001' },
-]
+export const initialState: SeedState = {
+  stores: [
+    { id: 1, name: 'Store A', region: 'North', location: 'Algiers Center', status: 'active' },
+    { id: 2, name: 'Store B', region: 'North', location: 'Bab Ezzouar', status: 'active' },
+    { id: 3, name: 'Store C', region: 'East', location: 'Constantine', status: 'active' },
+    { id: 4, name: 'Store D', region: 'West', location: 'Oran', status: 'active' },
+  ],
+  users: [
+    { id: 1, name: 'Sarah Admin', email: 'admin@inventorypro.com', role: 'Administrator', storeId: null, status: 'active' },
+    { id: 2, name: 'Karim Manager', email: 'manager@inventorypro.com', role: 'Store Manager', storeId: 1, status: 'active' },
+    { id: 3, name: 'Nadia Seller', email: 'seller@inventorypro.com', role: 'Seller', storeId: 1, status: 'active' },
+    { id: 4, name: 'Sonia Manager', email: 'manager.b@inventorypro.com', role: 'Store Manager', storeId: 2, status: 'active' },
+  ],
+  products: [
+    { id: 1, reference: 'CAB-001', name: 'Cable', category: 'Electric', sellingPrice: 1200 },
+    { id: 2, reference: 'FIL-002', name: 'Filter', category: 'Maintenance', sellingPrice: 1900 },
+    { id: 3, reference: 'BAT-003', name: 'Battery 12V', category: 'Power', sellingPrice: 12500 },
+    { id: 4, reference: 'SPK-004', name: 'Spark Plug', category: 'Engine', sellingPrice: 650 },
+  ],
+  stock: [
+    { productId: 1, storeId: 1, normalQty: 5, cabaQty: 10 },
+    { productId: 1, storeId: 2, normalQty: 6, cabaQty: 4 },
+    { productId: 1, storeId: 3, normalQty: 3, cabaQty: 12 },
+    { productId: 1, storeId: 4, normalQty: 10, cabaQty: 20 },
+    { productId: 2, storeId: 1, normalQty: 20, cabaQty: 5 },
+    { productId: 2, storeId: 2, normalQty: 7, cabaQty: 8 },
+    { productId: 2, storeId: 3, normalQty: 2, cabaQty: 0 },
+    { productId: 3, storeId: 1, normalQty: 4, cabaQty: 1 },
+    { productId: 3, storeId: 4, normalQty: 9, cabaQty: 3 },
+    { productId: 4, storeId: 1, normalQty: 0, cabaQty: 15 },
+    { productId: 4, storeId: 2, normalQty: 1, cabaQty: 3 },
+  ],
+  movements: [
+    {
+      id: 1,
+      createdAt: '2026-06-01T09:10:00.000Z',
+      type: 'IN',
+      productId: 1,
+      quantity: 10,
+      storeId: 1,
+      byUser: 'Karim Manager',
+      note: 'Manual stock entry',
+    },
+    {
+      id: 2,
+      createdAt: '2026-06-02T11:30:00.000Z',
+      type: 'OUT',
+      productId: 2,
+      quantity: 4,
+      storeId: 1,
+      byUser: 'Nadia Seller',
+      note: 'Invoice INV-102',
+    },
+  ],
+  transfers: [
+    {
+      id: 1,
+      productId: 1,
+      quantity: 8,
+      fromStoreId: 2,
+      toStoreId: 1,
+      requestedBy: 'Sonia Manager',
+      requestedAt: '2026-06-02T14:00:00.000Z',
+      status: 'PENDING',
+    },
+  ],
+  invoices: [
+    {
+      id: 1,
+      invoiceNumber: 'INV-100',
+      storeId: 1,
+      seller: 'Nadia Seller',
+      createdAt: '2026-06-01T16:20:00.000Z',
+      customerName: 'Ali B.',
+      customerPhone: '0555000011',
+      items: [
+        { productId: 1, quantity: 5, unitPrice: 1200 },
+        { productId: 2, quantity: 2, unitPrice: 1900 },
+      ],
+      returnedItems: [],
+      status: 'OPEN',
+    },
+    {
+      id: 2,
+      invoiceNumber: 'INV-101',
+      storeId: 2,
+      seller: 'Seller B',
+      createdAt: '2026-06-02T10:00:00.000Z',
+      items: [{ productId: 1, quantity: 3, unitPrice: 1200 }],
+      returnedItems: [{ productId: 1, quantity: 1 }],
+      status: 'PARTIAL_RETURN',
+    },
+  ],
+  expenses: [
+    { id: 1, storeId: 1, title: 'Delivery Truck', amount: 15000, createdAt: '2026-06-01T08:00:00.000Z' },
+    { id: 2, storeId: 1, title: 'Packaging', amount: 4200, createdAt: '2026-06-02T08:00:00.000Z' },
+    { id: 3, storeId: 2, title: 'Store Maintenance', amount: 7300, createdAt: '2026-06-02T08:00:00.000Z' },
+  ],
+  audit: [
+    {
+      id: 1,
+      createdAt: '2026-06-01T09:10:00.000Z',
+      actor: 'Karim Manager',
+      action: 'STOCK_ENTRY',
+      details: 'Added 10 units of CAB-001 in Store A',
+    },
+    {
+      id: 2,
+      createdAt: '2026-06-02T10:05:00.000Z',
+      actor: 'Nadia Seller',
+      action: 'INVOICE_CREATED',
+      details: 'Created INV-101 in Store A',
+    },
+    {
+      id: 3,
+      createdAt: '2026-06-02T14:00:00.000Z',
+      actor: 'Sonia Manager',
+      action: 'TRANSFER_REQUESTED',
+      details: 'Requested 8 x CAB-001 from Store B to Store A',
+    },
+  ],
+}

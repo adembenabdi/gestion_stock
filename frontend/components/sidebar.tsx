@@ -12,7 +12,10 @@ import {
   LogOut,
   Home,
   Upload,
-  Building2
+  Building2,
+  Receipt,
+  RotateCcw,
+  Wallet
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getRole, clearSession } from '@/lib/auth'
@@ -23,16 +26,19 @@ interface NavLink {
   label: string
   icon: React.ReactNode
   section?: 'main' | 'admin'
-  roles?: ('Administrator' | 'Branch Manager' | 'Viewer')[]
+  roles?: ('Administrator' | 'Store Manager' | 'Seller')[]
 }
 
 const navLinks: NavLink[] = [
-  { href: '/dashboard', label: 'Tableau de bord', icon: <Home size={20} />, section: 'main', roles: ['Administrator', 'Branch Manager', 'Viewer'] },
-  { href: '/search', label: 'Recherche piece', icon: <Search size={20} />, section: 'main', roles: ['Administrator', 'Branch Manager', 'Viewer'] },
-  { href: '/inventory', label: 'Catalogue', icon: <Boxes size={20} />, section: 'main', roles: ['Administrator', 'Branch Manager'] },
-  { href: '/operations', label: 'Mouvements', icon: <Package size={20} />, section: 'main', roles: ['Administrator', 'Branch Manager'] },
-  { href: '/import', label: 'Importer Excel', icon: <Upload size={20} />, section: 'main', roles: ['Administrator', 'Branch Manager'] },
-  { href: '/history', label: 'Historique', icon: <BarChart3 size={20} />, section: 'main', roles: ['Administrator', 'Branch Manager', 'Viewer'] },
+  { href: '/dashboard', label: 'Tableau de bord', icon: <Home size={20} />, section: 'main', roles: ['Administrator', 'Store Manager', 'Seller'] },
+  { href: '/search', label: 'Recherche intelligente', icon: <Search size={20} />, section: 'main', roles: ['Administrator', 'Store Manager', 'Seller'] },
+  { href: '/invoices', label: 'Factures', icon: <Receipt size={20} />, section: 'main', roles: ['Administrator', 'Store Manager', 'Seller'] },
+  { href: '/returns', label: 'Retours', icon: <RotateCcw size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
+  { href: '/inventory', label: 'Stock', icon: <Boxes size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
+  { href: '/operations', label: 'Transferts', icon: <Package size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
+  { href: '/finance', label: 'Finance', icon: <Wallet size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
+  { href: '/import', label: 'Importer Excel', icon: <Upload size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
+  { href: '/history', label: 'Audit', icon: <BarChart3 size={20} />, section: 'main', roles: ['Administrator', 'Store Manager', 'Seller'] },
   { href: '/admin', label: 'Administration', icon: <Settings size={20} />, section: 'admin', roles: ['Administrator'] },
   { href: '/admin/points-de-vente', label: 'Points de vente', icon: <Building2 size={20} />, section: 'admin', roles: ['Administrator'] },
 ]
@@ -40,7 +46,7 @@ const navLinks: NavLink[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const [userRole, setUserRole] = useState('Viewer')
+  const [userRole, setUserRole] = useState('Seller')
 
   useEffect(() => {
     setUserRole(getRole())
@@ -56,7 +62,7 @@ export function Sidebar() {
   }
 
   const visibleLinks = navLinks.filter(link => {
-    return !link.roles || link.roles.includes(userRole as 'Administrator' | 'Branch Manager' | 'Viewer')
+    return !link.roles || link.roles.includes(userRole as 'Administrator' | 'Store Manager' | 'Seller')
   })
 
   const mainLinksVisible = visibleLinks.filter(link => link.section === 'main')
@@ -73,7 +79,7 @@ export function Sidebar() {
           <div className="flex flex-col">
             <span className="font-semibold text-sidebar-foreground text-sm">InventoryPro</span>
             <span className="text-xs text-sidebar-foreground/60">
-              {userRole === 'Administrator' ? 'Administrateur' : userRole === 'Branch Manager' ? 'Responsable' : 'Lecteur'}
+              {userRole === 'Administrator' ? 'Administrateur' : userRole === 'Store Manager' ? 'Responsable magasin' : 'Vendeur'}
             </span>
           </div>
         </Link>

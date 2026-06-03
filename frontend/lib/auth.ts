@@ -6,15 +6,15 @@ import type { UserRole } from './seed-data'
 const ROLE_KEY = 'userRole'
 const NAME_KEY = 'userName'
 const EMAIL_KEY = 'userEmail'
-const BRANCH_KEY = 'userBranch'
+const STORE_ID_KEY = 'userStoreId'
 
-export const ALL_ROLES: UserRole[] = ['Administrator', 'Branch Manager', 'Viewer']
+export const ALL_ROLES: UserRole[] = ['Administrator', 'Store Manager', 'Seller']
 
 export interface Session {
   role: UserRole
   name: string
   email: string
-  branch: string
+  storeId: number | null
 }
 
 export function setSession(session: Session) {
@@ -22,12 +22,12 @@ export function setSession(session: Session) {
   sessionStorage.setItem(ROLE_KEY, session.role)
   sessionStorage.setItem(NAME_KEY, session.name)
   sessionStorage.setItem(EMAIL_KEY, session.email)
-  sessionStorage.setItem(BRANCH_KEY, session.branch)
+  sessionStorage.setItem(STORE_ID_KEY, session.storeId === null ? '' : String(session.storeId))
 }
 
 export function getRole(): UserRole {
-  if (typeof window === 'undefined') return 'Viewer'
-  return (sessionStorage.getItem(ROLE_KEY) as UserRole) || 'Viewer'
+  if (typeof window === 'undefined') return 'Seller'
+  return (sessionStorage.getItem(ROLE_KEY) as UserRole) || 'Seller'
 }
 
 export function getName(): string {
@@ -40,16 +40,28 @@ export function clearSession() {
   sessionStorage.removeItem(ROLE_KEY)
   sessionStorage.removeItem(NAME_KEY)
   sessionStorage.removeItem(EMAIL_KEY)
-  sessionStorage.removeItem(BRANCH_KEY)
+  sessionStorage.removeItem(STORE_ID_KEY)
+}
+
+export function getStoreId(): number | null {
+  if (typeof window === 'undefined') return null
+  const raw = sessionStorage.getItem(STORE_ID_KEY)
+  if (!raw) return null
+  const parsed = Number(raw)
+  return Number.isNaN(parsed) ? null : parsed
 }
 
 // Role-based capabilities used to gate UI across the app.
 export function can(role: UserRole) {
   return {
-    manageInventory: role === 'Administrator' || role === 'Branch Manager',
-    recordOperations: role === 'Administrator' || role === 'Branch Manager',
-    importExcel: role === 'Administrator' || role === 'Branch Manager',
+    manageInventory: role === 'Administrator' || role === 'Store Manager',
+    recordOperations: role === 'Administrator' || role === 'Store Manager',
+    createInvoices: role === 'Administrator' || role === 'Store Manager' || role === 'Seller',
+    processReturns: role === 'Administrator' || role === 'Store Manager',
+    viewFinance: role === 'Administrator' || role === 'Store Manager',
+    importExcel: role === 'Administrator' || role === 'Store Manager',
     administer: role === 'Administrator',
     viewAllBranches: role === 'Administrator',
+    viewTaxBreakdown: role === 'Administrator',
   }
 }

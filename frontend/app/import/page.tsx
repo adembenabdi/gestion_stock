@@ -6,7 +6,9 @@ import { MainLayout } from '@/components/main-layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, X } from 'lucide-react'
-import { getRole, can } from '@/lib/auth'
+import { can, getName, getRole, getStoreId } from '@/lib/auth'
+import { importStockRows } from '@/lib/mock-store'
+import type { StockClass } from '@/lib/seed-data'
 
 interface ImportRow {
   line: number
@@ -15,14 +17,6 @@ interface ImportRow {
   status: 'created' | 'updated' | 'error'
   message: string
 }
-
-// Mock import report (no backend) — illustrates additive import + auto-creation.
-const mockReport: ImportRow[] = [
-  { line: 2, reference: 'CAR-001', quantity: 10, status: 'updated', message: 'Stock mis a jour : 20 + 10 = 30' },
-  { line: 3, reference: 'OIL-002', quantity: 50, status: 'updated', message: 'Stock mis a jour : 120 + 50 = 170' },
-  { line: 4, reference: 'NEW-009', quantity: 25, status: 'created', message: 'Reference inconnue — piece et stock crees automatiquement' },
-  { line: 5, reference: '', quantity: 0, status: 'error', message: 'Reference manquante — ligne ignoree' },
-]
 
 export default function ImportPage() {
   const router = useRouter()
@@ -33,6 +27,7 @@ export default function ImportPage() {
   const [isDragging, setIsDragging] = useState(false)
   const [report, setReport] = useState<ImportRow[] | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [stockClass, setStockClass] = useState<StockClass>('NORMAL')
 
   useEffect(() => {
     const role = getRole()
@@ -62,11 +57,22 @@ export default function ImportPage() {
   const onImport = () => {
     if (!fileName) return
     setIsProcessing(true)
-    // Simulate processing — seed data only.
+
+    // UI-only import simulation using shared seed state.
+    const reportRows = importStockRows(
+      [
+        { reference: 'CAB-001', quantity: 10, stockClass },
+        { reference: 'FIL-002', quantity: 5, stockClass },
+        { reference: 'NEW-009', name: 'New Imported Product', category: 'Imported', price: 2500, quantity: 7, stockClass },
+      ],
+      getStoreId() || 1,
+      getName(),
+    )
+
     setTimeout(() => {
-      setReport(mockReport)
+      setReport(reportRows)
       setIsProcessing(false)
-    }, 800)
+    }, 500)
   }
 
   const reset = () => {
@@ -145,6 +151,13 @@ export default function ImportPage() {
               className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
             >
               {isProcessing ? 'Importation en cours...' : 'Importer le stock'}
+            </Button>
+            <Button
+              variant="outline"
+              className="border-border text-foreground hover:bg-sidebar"
+              onClick={() => setStockClass((prev) => (prev === 'NORMAL' ? 'CABA' : 'NORMAL'))}
+            >
+              Class: {stockClass}
             </Button>
           </div>
         </Card>
