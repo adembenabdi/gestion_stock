@@ -37,10 +37,10 @@ const navLinks: NavLink[] = [
   { href: '/inventory', label: 'Stock', icon: <Boxes size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
   { href: '/operations', label: 'Transferts', icon: <Package size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
   { href: '/finance', label: 'Finance', icon: <Wallet size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
+  { href: '/points-de-vente', label: 'Points de vente', icon: <Building2 size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
   { href: '/import', label: 'Importer Excel', icon: <Upload size={20} />, section: 'main', roles: ['Administrator', 'Store Manager'] },
   { href: '/history', label: 'Audit', icon: <BarChart3 size={20} />, section: 'main', roles: ['Administrator', 'Store Manager', 'Seller'] },
   { href: '/admin', label: 'Administration', icon: <Settings size={20} />, section: 'admin', roles: ['Administrator'] },
-  { href: '/admin/points-de-vente', label: 'Points de vente', icon: <Building2 size={20} />, section: 'admin', roles: ['Administrator'] },
 ]
 
 export function Sidebar() {

@@ -70,22 +70,22 @@ export default function FinancePage() {
   if (!allowed) return null
 
   return (
-    <MainLayout title="Finance" subtitle="Store managers see their store. Admin sees global performance and comparisons.">
+    <MainLayout title="Finance" subtitle="Le responsable voit son magasin. L administrateur voit le global et la comparaison des magasins.">
       {message && (
         <Card className="bg-card border border-border p-4 mb-6 text-sm text-foreground">{message}</Card>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="bg-card border border-border p-6">
-          <p className="text-sm text-muted-foreground mb-1">Sales</p>
+          <p className="text-sm text-muted-foreground mb-1">Ventes</p>
           <p className="text-2xl font-bold text-foreground">{summary.sales.toLocaleString()} DZD</p>
         </Card>
         <Card className="bg-card border border-border p-6">
-          <p className="text-sm text-muted-foreground mb-1">Returns</p>
+          <p className="text-sm text-muted-foreground mb-1">Retours</p>
           <p className="text-2xl font-bold text-foreground">{summary.returns.toLocaleString()} DZD</p>
         </Card>
         <Card className="bg-card border border-border p-6">
-          <p className="text-sm text-muted-foreground mb-1">Expenses</p>
+          <p className="text-sm text-muted-foreground mb-1">Depenses</p>
           <p className="text-2xl font-bold text-foreground">{summary.expenses.toLocaleString()} DZD</p>
         </Card>
         <Card className="bg-card border border-border p-6">
@@ -97,24 +97,24 @@ export default function FinancePage() {
       <div className="mb-6">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">Add expense</Button>
+            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">Ajouter une depense</Button>
           </DialogTrigger>
           <DialogContent className="bg-card border border-border">
             <DialogHeader>
-              <DialogTitle className="text-foreground">Record expense</DialogTitle>
-              <DialogDescription className="text-muted-foreground">Simple business expense tracking for store performance.</DialogDescription>
+              <DialogTitle className="text-foreground">Enregistrer une depense</DialogTitle>
+              <DialogDescription className="text-muted-foreground">Suivi simple des depenses pour la performance du magasin.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3">
               <div>
-                <Label className="text-foreground">Title</Label>
+                <Label className="text-foreground">Intitule</Label>
                 <Input value={expenseTitle} onChange={(e) => setExpenseTitle(e.target.value)} className="bg-input border-border text-foreground" />
               </div>
               <div>
-                <Label className="text-foreground">Amount (DZD)</Label>
+                <Label className="text-foreground">Montant (DZD)</Label>
                 <Input type="number" value={expenseAmount} onChange={(e) => setExpenseAmount(e.target.value)} className="bg-input border-border text-foreground" />
               </div>
-              <Button className="bg-accent hover:bg-accent/90" onClick={handleAddExpense}>Save expense</Button>
+              <Button className="bg-accent hover:bg-accent/90" onClick={handleAddExpense}>Enregistrer</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -123,15 +123,15 @@ export default function FinancePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-card border border-border overflow-hidden">
           <div className="p-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground">Invoice revenue and returns</h2>
+            <h2 className="text-lg font-semibold text-foreground">Recettes factures et retours</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-sidebar border-b border-border">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Invoice</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Sales</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Returns</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Facture</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Ventes</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Retours</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,15 +149,15 @@ export default function FinancePage() {
 
         <Card className="bg-card border border-border overflow-hidden">
           <div className="p-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground">Expenses</h2>
+            <h2 className="text-lg font-semibold text-foreground">Depenses</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-sidebar border-b border-border">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Title</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Amount</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Intitule</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Montant</th>
                 </tr>
               </thead>
               <tbody>

@@ -63,7 +63,7 @@ export default function ImportPage() {
       [
         { reference: 'CAB-001', quantity: 10, stockClass },
         { reference: 'FIL-002', quantity: 5, stockClass },
-        { reference: 'NEW-009', name: 'New Imported Product', category: 'Imported', price: 2500, quantity: 7, stockClass },
+        { reference: 'NEW-009', name: 'Produit importe nouveau', category: 'Importe', price: 2500, quantity: 7, stockClass },
       ],
       getStoreId() || 1,
       getName(),
@@ -157,7 +157,7 @@ export default function ImportPage() {
               className="border-border text-foreground hover:bg-sidebar"
               onClick={() => setStockClass((prev) => (prev === 'NORMAL' ? 'CABA' : 'NORMAL'))}
             >
-              Class: {stockClass}
+              Classe: {stockClass}
             </Button>
           </div>
         </Card>

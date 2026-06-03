@@ -10,7 +10,7 @@ import type { UserRole } from '@/lib/seed-data'
 
 export default function DashboardPage() {
   const [role, setRole] = useState<UserRole>('Seller')
-  const [storeName, setStoreName] = useState('Current Store')
+  const [storeName, setStoreName] = useState('Magasin courant')
   const [cards, setCards] = useState<Array<{ label: string; value: string; color: string; icon: React.ReactNode }>>([])
   const [recentEvents, setRecentEvents] = useState<Array<{ id: number; title: string; subtitle: string; badge: string }>>([])
 
@@ -22,7 +22,7 @@ export default function DashboardPage() {
     setRole(currentRole)
 
     const selectedStore = state.stores.find((s) => s.id === currentStoreId)
-    setStoreName(selectedStore?.name || 'All Stores')
+    setStoreName(selectedStore?.name || 'Tous les magasins')
 
     const financial = getFinancialSummary(currentRole, currentStoreId)
     const scopedInvoices = currentRole === 'Administrator'
@@ -38,19 +38,19 @@ export default function DashboardPage() {
 
     setCards([
       {
-        label: 'Available units',
+        label: 'Unites disponibles',
         value: String(totalQty),
         color: 'bg-primary/10',
         icon: <Package className="text-primary" size={24} />,
       },
       {
-        label: 'Low stock lines',
+        label: 'Lignes en stock faible',
         value: String(lowStock),
         color: 'bg-destructive/10',
         icon: <AlertCircle className="text-destructive" size={24} />,
       },
       {
-        label: 'Sales (DZD)',
+        label: 'Ventes (DZD)',
         value: financial.sales.toLocaleString(),
         color: 'bg-accent/10',
         icon: <TrendingUp className="text-accent" size={24} />,
@@ -66,7 +66,7 @@ export default function DashboardPage() {
     const invoiceEvents = scopedInvoices.slice(0, 5).map((inv) => ({
       id: inv.id,
       title: `${inv.invoiceNumber} - ${computeInvoiceTotal(inv).toLocaleString()} DZD`,
-      subtitle: `${new Date(inv.createdAt).toLocaleDateString()} - Returns ${computeReturnedTotal(inv).toLocaleString()} DZD`,
+      subtitle: `${new Date(inv.createdAt).toLocaleDateString()} - Retours ${computeReturnedTotal(inv).toLocaleString()} DZD`,
       badge: inv.status,
     }))
 
@@ -81,7 +81,7 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <MainLayout title="Tableau de bord" subtitle={`Role: ${role} - Scope: ${storeName}`}>
+    <MainLayout title="Tableau de bord" subtitle={`Role: ${role} - Perimetre: ${storeName}`}>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {cards.map((stat, index) => (
@@ -100,7 +100,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6">
         <Card className="bg-card border border-border p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-6">Recent business events</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-6">Evenements recents</h2>
           <div className="space-y-4">
             {recentEvents.map((event) => (
               <div

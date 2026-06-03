@@ -94,9 +94,9 @@ export default function AdminPage() {
       )}
 
       <div className="mb-6 flex justify-end">
-        <Link href="/admin/points-de-vente">
+        <Link href="/points-de-vente">
           <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">
-            Voir points de vente et stock total
+            Voir les points de vente
           </Button>
         </Link>
       </div>
@@ -161,14 +161,14 @@ export default function AdminPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Administrator">Administrator</SelectItem>
-                          <SelectItem value="Store Manager">Store Manager</SelectItem>
-                          <SelectItem value="Seller">Seller</SelectItem>
+                          <SelectItem value="Administrator">Administrateur</SelectItem>
+                          <SelectItem value="Store Manager">Responsable magasin</SelectItem>
+                          <SelectItem value="Seller">Vendeur</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="branch" className="text-foreground">Store</Label>
+                      <Label htmlFor="branch" className="text-foreground">Magasin</Label>
                       <Select value={newUser.storeId} onValueChange={(val) => setNewUser({ ...newUser, storeId: val })}>
                         <SelectTrigger className="bg-input border-border text-foreground">
                           <SelectValue />
@@ -213,7 +213,7 @@ export default function AdminPage() {
                         <td className="px-6 py-4 text-sm font-semibold text-foreground">{user.name}</td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">{user.email}</td>
                         <td className="px-6 py-4 text-sm text-foreground">{user.role}</td>
-                        <td className="px-6 py-4 text-sm text-foreground">{user.storeId ? stores.find((s) => s.id === user.storeId)?.name : 'All Stores'}</td>
+                        <td className="px-6 py-4 text-sm text-foreground">{user.storeId ? stores.find((s) => s.id === user.storeId)?.name : 'Tous les magasins'}</td>
                         <td className="px-6 py-4 text-sm">
                           <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-semibold">
                             {user.status === 'active' ? 'Actif' : 'Inactif'}
@@ -272,7 +272,7 @@ export default function AdminPage() {
                       <Label htmlFor="location" className="text-foreground">Emplacement</Label>
                       <Input
                         id="location"
-                        placeholder="Ex. Central district"
+                        placeholder="Ex. Centre-ville"
                         value={newBranch.location}
                         onChange={(e) => setNewBranch({ ...newBranch, location: e.target.value })}
                         className="bg-input border-border text-foreground"
@@ -285,10 +285,10 @@ export default function AdminPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="North">North</SelectItem>
-                          <SelectItem value="East">East</SelectItem>
-                          <SelectItem value="West">West</SelectItem>
-                          <SelectItem value="South">South</SelectItem>
+                          <SelectItem value="North">Nord</SelectItem>
+                          <SelectItem value="East">Est</SelectItem>
+                          <SelectItem value="West">Ouest</SelectItem>
+                          <SelectItem value="South">Sud</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -313,7 +313,7 @@ export default function AdminPage() {
                     <tr>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Agence</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Emplacement</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Responsable</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Region</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Statut</th>
                       <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">Actions</th>
                     </tr>

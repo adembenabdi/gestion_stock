@@ -42,10 +42,10 @@ export default function HistoryPage() {
         id: m.id,
         createdAt: m.createdAt,
         type: m.type,
-        productRef: product?.reference || 'UNKNOWN',
-        productName: product?.name || 'Unknown product',
+        productRef: product?.reference || 'INCONNU',
+        productName: product?.name || 'Produit inconnu',
         quantity: m.quantity,
-        storeName: store?.name || 'Unknown store',
+        storeName: store?.name || 'Magasin inconnu',
         byUser: m.byUser,
         note: m.note,
       }
@@ -77,12 +77,12 @@ export default function HistoryPage() {
   })
 
   return (
-    <MainLayout title="Audit and traceability" subtitle={`Role scope: ${role}`}>
+    <MainLayout title="Audit et tracabilite" subtitle={`Portee du role: ${role}`}>
       <Card className="bg-card border border-border p-6 mb-8">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
           <Input
-            placeholder="Search movement or audit entries"
+            placeholder="Rechercher dans les mouvements et l audit"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
@@ -92,18 +92,18 @@ export default function HistoryPage() {
 
       <Card className="bg-card border border-border overflow-hidden">
         <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">Stock movements</h2>
+          <h2 className="text-lg font-semibold text-foreground">Mouvements de stock</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-sidebar border-b border-border">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date and time</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date et heure</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Type</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Product</th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Qty</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Store</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">User</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Produit</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Qte</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Magasin</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Utilisateur</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Note</th>
               </tr>
             </thead>
@@ -138,14 +138,14 @@ export default function HistoryPage() {
 
       <Card className="bg-card border border-border overflow-hidden mt-6">
         <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">Audit trail</h2>
+          <h2 className="text-lg font-semibold text-foreground">Journal d audit</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-sidebar border-b border-border">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date and time</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Actor</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date et heure</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Acteur</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Action</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Details</th>
               </tr>

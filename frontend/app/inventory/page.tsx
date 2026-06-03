@@ -43,12 +43,12 @@ export default function InventoryPage() {
       return {
         product: product || {
           id: stockRow.productId,
-          reference: 'UNKNOWN',
-          name: 'Unknown product',
+          reference: 'INCONNU',
+          name: 'Produit inconnu',
           sellingPrice: 0,
-          category: 'Unknown',
+          category: 'Inconnue',
         },
-        storeName: store?.name || 'Unknown store',
+        storeName: store?.name || 'Magasin inconnu',
         normalQty: stockRow.normalQty,
         cabaQty: stockRow.cabaQty,
         totalQty: stockRow.normalQty + stockRow.cabaQty,
@@ -67,12 +67,12 @@ export default function InventoryPage() {
   if (!allowed) return null
 
   return (
-    <MainLayout title="Stock par magasin" subtitle="Admin sees Normal/CABA split; other roles see only physical total">
+    <MainLayout title="Stock par magasin" subtitle="L administrateur voit Normal/CABA; les autres voient uniquement le total physique">
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
           <Input
-            placeholder="Search by reference or product name"
+            placeholder="Rechercher par reference ou nom produit"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
@@ -86,16 +86,16 @@ export default function InventoryPage() {
             <thead className="bg-sidebar border-b border-border">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Reference</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Product</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Store</th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Total Qty</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Produit</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Magasin</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Qte totale</th>
                 {role === 'Administrator' && (
                   <>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Normal Qty</th>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">CABA Qty</th>
                   </>
                 )}
-                <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Price (DZD)</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Prix (DZD)</th>
               </tr>
             </thead>
             <tbody>
@@ -119,7 +119,7 @@ export default function InventoryPage() {
         </div>
         {filteredRows.length === 0 && (
           <div className="p-12 text-center text-muted-foreground">
-            No stock rows match your search.
+            Aucune ligne de stock ne correspond a votre recherche.
           </div>
         )}
       </Card>

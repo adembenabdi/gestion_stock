@@ -87,19 +87,25 @@ export default function OperationsPage() {
 
   if (!allowed) return null
 
+  const labelStatut = (status: TransferRequest['status']) => {
+    if (status === 'PENDING') return 'EN ATTENTE'
+    if (status === 'APPROVED') return 'APPROUVE'
+    return 'REJETE'
+  }
+
   return (
-    <MainLayout title="Transfer workflow" subtitle="Store managers request transfer. Admin approves and executes stock movement.">
+    <MainLayout title="Flux de transfert" subtitle="Le responsable demande, l administrateur approuve, le transfert est execute.">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="bg-card border border-border p-6">
-          <p className="text-sm text-muted-foreground mb-2">Pending requests</p>
+          <p className="text-sm text-muted-foreground mb-2">Demandes en attente</p>
           <p className="text-3xl font-bold text-foreground">{transferRows.filter((x) => x.status === 'PENDING').length}</p>
         </Card>
         <Card className="bg-card border border-border p-6">
-          <p className="text-sm text-muted-foreground mb-2">Approved requests</p>
+          <p className="text-sm text-muted-foreground mb-2">Demandes approuvees</p>
           <p className="text-3xl font-bold text-accent">{transferRows.filter((x) => x.status === 'APPROVED').length}</p>
         </Card>
         <Card className="bg-card border border-border p-6">
-          <p className="text-sm text-muted-foreground mb-2">Rejected requests</p>
+          <p className="text-sm text-muted-foreground mb-2">Demandes rejetees</p>
           <p className="text-3xl font-bold text-primary">{transferRows.filter((x) => x.status === 'REJECTED').length}</p>
         </Card>
       </div>
@@ -113,19 +119,19 @@ export default function OperationsPage() {
           <DialogTrigger asChild>
             <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">
               <Plus size={20} />
-              Request transfer
+              Demander un transfert
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-card border border-border">
             <DialogHeader>
-              <DialogTitle className="text-foreground">Create transfer request</DialogTitle>
+              <DialogTitle className="text-foreground">Creer une demande de transfert</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Manager creates a request. Admin approval executes source to destination stock transfer.
+                Le responsable cree la demande. L administrateur valide pour executer le transfert.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="product" className="text-foreground">Product</Label>
+                <Label htmlFor="product" className="text-foreground">Produit</Label>
                 <Select value={newTransfer.productId} onValueChange={(val) => setNewTransfer({ ...newTransfer, productId: val })}>
                   <SelectTrigger className="bg-input border-border text-foreground">
                     <SelectValue />
@@ -141,7 +147,7 @@ export default function OperationsPage() {
               </div>
 
               <div>
-                <Label htmlFor="quantity" className="text-foreground">Quantity</Label>
+                <Label htmlFor="quantity" className="text-foreground">Quantite</Label>
                 <Input
                   id="quantity"
                   type="number"
@@ -152,7 +158,7 @@ export default function OperationsPage() {
               </div>
 
               <div>
-                <Label htmlFor="source" className="text-foreground">Source store</Label>
+                <Label htmlFor="source" className="text-foreground">Magasin source</Label>
                 <Select value={newTransfer.fromStoreId} onValueChange={(val) => setNewTransfer({ ...newTransfer, fromStoreId: val })}>
                   <SelectTrigger className="bg-input border-border text-foreground">
                     <SelectValue />
@@ -166,7 +172,7 @@ export default function OperationsPage() {
               </div>
 
               <div>
-                <Label htmlFor="target" className="text-foreground">Target store</Label>
+                <Label htmlFor="target" className="text-foreground">Magasin destination</Label>
                 <Select value={newTransfer.toStoreId} onValueChange={(val) => setNewTransfer({ ...newTransfer, toStoreId: val })}>
                   <SelectTrigger className="bg-input border-border text-foreground">
                     <SelectValue />
@@ -181,10 +187,10 @@ export default function OperationsPage() {
             </div>
             <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setIsAddOpen(false)} className="border-border">
-                Cancel
+                Annuler
               </Button>
               <Button onClick={handleCreateRequest} className="bg-accent hover:bg-accent/90">
-                Submit request
+                Envoyer la demande
               </Button>
             </div>
           </DialogContent>
@@ -202,7 +208,7 @@ export default function OperationsPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-3">
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-secondary/20 text-secondary-foreground">TRANSFER</span>
+                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-secondary/20 text-secondary-foreground">TRANSFERT</span>
                   <span
                     className={`text-xs font-semibold px-3 py-1 rounded-full ${
                       row.status === 'APPROVED'
@@ -212,25 +218,25 @@ export default function OperationsPage() {
                         : 'bg-destructive/20 text-destructive'
                     }`}
                   >
-                    {row.status}
+                    {labelStatut(row.status)}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground mb-1">Product</p>
+                    <p className="text-muted-foreground mb-1">Produit</p>
                     <p className="font-semibold text-foreground">{product?.name}</p>
                     <p className="text-xs text-muted-foreground">{product?.reference}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground mb-1">Quantity</p>
+                    <p className="text-muted-foreground mb-1">Quantite</p>
                     <p className="text-2xl font-bold text-accent">{row.quantity}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground mb-1">Route</p>
-                    <p className="font-semibold text-foreground">{source?.name} to {target?.name}</p>
+                    <p className="text-muted-foreground mb-1">Trajet</p>
+                    <p className="font-semibold text-foreground">{source?.name} vers {target?.name}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground mb-1">Requested by</p>
+                    <p className="text-muted-foreground mb-1">Demande par</p>
                     <p className="font-semibold text-foreground">{row.requestedBy}</p>
                     <p className="text-xs text-muted-foreground">{new Date(row.requestedAt).toLocaleString()}</p>
                   </div>
@@ -245,7 +251,7 @@ export default function OperationsPage() {
                     className="bg-primary hover:bg-primary/90"
                   >
                     <Check size={16} />
-                    Approve
+                    Approuver
                   </Button>
                   <Button
                     onClick={() => handleDecision(row.id, false)}
@@ -254,7 +260,7 @@ export default function OperationsPage() {
                     className="border-destructive text-destructive hover:bg-destructive/10"
                   >
                     <X size={16} />
-                    Reject
+                    Rejeter
                   </Button>
                 </div>
               )}

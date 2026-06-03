@@ -83,7 +83,7 @@ export default function InvoicesPage() {
   if (!allowed) return null
 
   return (
-    <MainLayout title="Factures" subtitle="Create and manage invoices with optional customer details">
+    <MainLayout title="Factures" subtitle="Creer et gerer les factures avec informations client optionnelles">
       {message && (
         <Card className="bg-card border border-border p-4 mb-6 text-sm text-foreground">{message}</Card>
       )}
@@ -91,27 +91,27 @@ export default function InvoicesPage() {
       <div className="mb-6">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">New invoice</Button>
+            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">Nouvelle facture</Button>
           </DialogTrigger>
           <DialogContent className="bg-card border border-border max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-foreground">Create invoice</DialogTitle>
+              <DialogTitle className="text-foreground">Creer une facture</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Customer info is optional. Invoice can be created with product lines only.
+                Les informations client sont optionnelles. La facture peut etre creee sans client renseigne.
               </DialogDescription>
             </DialogHeader>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <Label className="text-foreground">Customer Name (optional)</Label>
+                <Label className="text-foreground">Nom client (optionnel)</Label>
                 <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="bg-input border-border text-foreground" />
               </div>
               <div>
-                <Label className="text-foreground">Customer Phone (optional)</Label>
+                <Label className="text-foreground">Telephone client (optionnel)</Label>
                 <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="bg-input border-border text-foreground" />
               </div>
               <div className="md:col-span-2">
-                <Label className="text-foreground">Customer Address (optional)</Label>
+                <Label className="text-foreground">Adresse client (optionnel)</Label>
                 <Input value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} className="bg-input border-border text-foreground" />
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function InvoicesPage() {
               {lines.map((line, idx) => (
                 <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-foreground">Product</Label>
+                    <Label className="text-foreground">Produit</Label>
                     <Select
                       value={line.productId}
                       onValueChange={(val) => {
@@ -141,7 +141,7 @@ export default function InvoicesPage() {
                   </div>
 
                   <div>
-                    <Label className="text-foreground">Quantity</Label>
+                    <Label className="text-foreground">Quantite</Label>
                     <Input
                       type="number"
                       min={1}
@@ -157,8 +157,8 @@ export default function InvoicesPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Button variant="outline" className="border-border text-foreground" onClick={handleAddLine}>Add line</Button>
-              <Button className="bg-accent hover:bg-accent/90" onClick={handleCreate}>Create invoice</Button>
+              <Button variant="outline" className="border-border text-foreground" onClick={handleAddLine}>Ajouter une ligne</Button>
+              <Button className="bg-accent hover:bg-accent/90" onClick={handleCreate}>Creer la facture</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -169,12 +169,12 @@ export default function InvoicesPage() {
           <table className="w-full">
             <thead className="bg-sidebar border-b border-border">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Invoice</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Store</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Seller</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Customer</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Facture</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Magasin</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Vendeur</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Client</th>
                 <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Total (DZD)</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Statut</th>
               </tr>
             </thead>
             <tbody>
@@ -184,9 +184,9 @@ export default function InvoicesPage() {
                 return (
                   <tr key={invoice.id} className="border-b border-border hover:bg-sidebar/50 transition-colors">
                     <td className="px-6 py-4 text-sm font-semibold text-accent">{invoice.invoiceNumber}</td>
-                    <td className="px-6 py-4 text-sm text-foreground">{store?.name || 'Unknown'}</td>
+                    <td className="px-6 py-4 text-sm text-foreground">{store?.name || 'Inconnu'}</td>
                     <td className="px-6 py-4 text-sm text-foreground">{invoice.seller}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{invoice.customerName || 'Walk-in customer'}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{invoice.customerName || 'Client de passage'}</td>
                     <td className="px-6 py-4 text-sm text-right text-foreground font-semibold">{total.toLocaleString()}</td>
                     <td className="px-6 py-4 text-sm">
                       <span className="text-xs font-semibold px-3 py-1 rounded-full bg-accent/20 text-accent">{invoice.status}</span>

@@ -53,7 +53,7 @@ export default function ReturnsPage() {
 
   const handleApplyReturn = () => {
     if (!selectedInvoiceId) {
-      setMessage('Select an invoice first')
+      setMessage('Selectionnez une facture')
       return
     }
 
@@ -76,7 +76,7 @@ export default function ReturnsPage() {
   if (!allowed) return null
 
   return (
-    <MainLayout title="Retours" subtitle="Handle full and partial returns. Returned quantities are added back to inventory.">
+    <MainLayout title="Retours" subtitle="Gerer les retours complets et partiels. Les quantites reviennent en stock automatiquement.">
       {message && (
         <Card className="bg-card border border-border p-4 mb-6 text-sm text-foreground">{message}</Card>
       )}
@@ -84,22 +84,22 @@ export default function ReturnsPage() {
       <div className="mb-6">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">Process return</Button>
+            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">Traiter un retour</Button>
           </DialogTrigger>
           <DialogContent className="bg-card border border-border max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-foreground">Invoice return</DialogTitle>
+              <DialogTitle className="text-foreground">Retour de facture</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Full return: return all sold quantities. Partial return: return only selected quantities.
+                Retour complet: toutes les quantites vendues. Retour partiel: quantites selectionnees.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div>
-                <Label className="text-foreground">Invoice</Label>
+                <Label className="text-foreground">Facture</Label>
                 <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId}>
                   <SelectTrigger className="bg-input border-border text-foreground">
-                    <SelectValue placeholder="Select invoice" />
+                    <SelectValue placeholder="Selectionner une facture" />
                   </SelectTrigger>
                   <SelectContent>
                     {scopedInvoices.map((inv) => (
@@ -113,9 +113,9 @@ export default function ReturnsPage() {
 
               {selectedInvoice && (
                 <div className="p-3 rounded-lg bg-sidebar border border-sidebar-border text-sm text-foreground">
-                  Sold lines: {selectedInvoice.items.map((line) => {
+                  Lignes vendues: {selectedInvoice.items.map((line) => {
                     const p = state.products.find((x) => x.id === line.productId)
-                    return `${p?.reference || 'Unknown'} x${line.quantity}`
+                    return `${p?.reference || 'Inconnu'} x${line.quantity}`
                   }).join(', ')}
                 </div>
               )}
@@ -124,7 +124,7 @@ export default function ReturnsPage() {
                 {lines.map((line, idx) => (
                   <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-foreground">Product</Label>
+                      <Label className="text-foreground">Produit</Label>
                       <Select
                         value={line.productId}
                         onValueChange={(val) => {
@@ -139,7 +139,7 @@ export default function ReturnsPage() {
                             const product = state.products.find((p) => p.id === invLine.productId)
                             return (
                               <SelectItem key={invLine.productId} value={String(invLine.productId)}>
-                                {product?.reference} - sold {invLine.quantity}
+                                {product?.reference} - vendu {invLine.quantity}
                               </SelectItem>
                             )
                           })}
@@ -147,7 +147,7 @@ export default function ReturnsPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-foreground">Return quantity</Label>
+                      <Label className="text-foreground">Quantite retour</Label>
                       <Input
                         type="number"
                         min={1}
@@ -171,9 +171,9 @@ export default function ReturnsPage() {
                     setLines((prev) => [...prev, { productId: String(defaultProductId), quantity: '1' }])
                   }}
                 >
-                  Add return line
+                  Ajouter ligne de retour
                 </Button>
-                <Button className="bg-accent hover:bg-accent/90" onClick={handleApplyReturn}>Apply return</Button>
+                <Button className="bg-accent hover:bg-accent/90" onClick={handleApplyReturn}>Valider le retour</Button>
               </div>
             </div>
           </DialogContent>
@@ -185,11 +185,11 @@ export default function ReturnsPage() {
           <table className="w-full">
             <thead className="bg-sidebar border-b border-border">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Invoice</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Store</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Sold Qty</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Returned Qty</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Facture</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Magasin</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Qte vendue</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Qte retournee</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Statut</th>
               </tr>
             </thead>
             <tbody>
@@ -200,7 +200,7 @@ export default function ReturnsPage() {
                 return (
                   <tr key={invoice.id} className="border-b border-border hover:bg-sidebar/50 transition-colors">
                     <td className="px-6 py-4 text-sm font-semibold text-accent">{invoice.invoiceNumber}</td>
-                    <td className="px-6 py-4 text-sm text-foreground">{store?.name || 'Unknown'}</td>
+                    <td className="px-6 py-4 text-sm text-foreground">{store?.name || 'Inconnu'}</td>
                     <td className="px-6 py-4 text-sm text-foreground">{sold}</td>
                     <td className="px-6 py-4 text-sm text-foreground">{returned}</td>
                     <td className="px-6 py-4 text-sm">
